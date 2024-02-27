@@ -1,0 +1,46 @@
+Servidor de Chat:
+
+import socket
+import threading
+
+def handle_client(client_socket, client_address):
+    print(f"[NEW CONNECTION] {client_address} connected.")
+
+    while True:
+        # Receber mensagem do cliente
+        message = client_socket.recv(1024).decode('utf-8')
+        if not message:
+            print(f"[DISCONNECTED] {client_address} disconnected.")
+            break
+
+        print(f"[{client_address}] {message}")
+
+        # Enviar mensagem de volta para todos os clientes conectados (broadcast)
+        for client in clients:
+            if client != client_socket:
+                client.send(message.encode('utf-8'))
+
+    # Fechar conexão com o cliente
+    client_socket.close()
+
+# Configurações do servidor
+host = '127.0.0.1'
+port = 5555
+
+# Inicializar socket do servidor
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.bind((host, port))
+server.listen()
+
+print(f"[LISTENING] Server is listening on {host}:{port}")
+
+clients = []
+
+while True:
+    # Aceitar nova conexão
+    client_socket, client_address = server.accept()
+    clients.append(client_socket)
+
+    # Iniciar thread para lidar com o cliente
+    thread = threading.Thread(target=handle_client, args=(client_socket, client_address))
+    thread.start()
