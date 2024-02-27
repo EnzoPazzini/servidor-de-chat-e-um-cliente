@@ -1,0 +1,39 @@
+Chat Do Cliente:
+
+import socket
+import threading
+
+def receive_messages(client_socket):
+    while True:
+        try:
+            # Receber mensagem do servidor
+            message = client_socket.recv(1024).decode('utf-8')
+            print(message)
+        except:
+            # Se houver algum erro na conexão, sair do loop
+            print("Erro ao receber mensagem do servidor.")
+            client_socket.close()
+            break
+
+def send_messages(client_socket):
+    while True:
+        # Obter mensagem do usuário
+        message = input()
+        
+        # Enviar mensagem para o servidor
+        client_socket.send(message.encode('utf-8'))
+
+# Configurações do cliente
+host = '127.0.0.1'
+port = 5555
+
+# Inicializar socket do cliente
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+client.connect((host, port))
+
+# Iniciar threads para receber e enviar mensagens
+receive_thread = threading.Thread(target=receive_messages, args=(client,))
+receive_thread.start()
+
+send_thread = threading.Thread(target=send_messages, args=(client,))
+send_thread.start()
